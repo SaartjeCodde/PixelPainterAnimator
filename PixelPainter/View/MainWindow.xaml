@@ -1,0 +1,284 @@
+﻿<Window x:Class="PixelPainter.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+        xmlns:command="http://www.galasoft.ch/mvvmlight"
+        xmlns:wpfTool="clr-namespace:Xceed.Wpf.Toolkit;assembly=Xceed.Wpf.Toolkit"
+        mc:Ignorable="d"
+        Title="Pixel Painter Animator" Height="820" MinHeight="520" Width="1200" MinWidth="500" DataContext="{Binding Source={StaticResource mainViewModel}}" WindowStartupLocation="Manual">
+    <Window.Resources>
+        <DataTemplate x:Key="LayerTemplate">
+            <StackPanel Orientation="Horizontal">
+                <Rectangle Height="10" Width="10" Fill="{Binding PixelColor}"/>
+            </StackPanel>
+        </DataTemplate>
+    </Window.Resources>
+
+    <Grid Background="#FF171717">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0">
+            <DockPanel>
+                <Menu DockPanel.Dock="Top" Background="#FFBB3333">
+                    <MenuItem Header="_File" Height="30" FontFamily="Agency FB" FontSize="18.667">
+                        <MenuItem Header="_Open...">
+                            <MenuItem Header="Sprite" Command="{Binding LoadCommand}" ></MenuItem>
+                            <MenuItem Header="Animations" Command="{Binding LoadAnimationsCommand}" ></MenuItem>
+                        </MenuItem>
+                        <MenuItem Header="_Save sprite (serialize)" Command="{Binding SaveCommand}"/>
+                    </MenuItem>
+                    <MenuItem Header="_Edit" Height="30" FontFamily="Agency FB" FontSize="18.667">
+                        <MenuItem Header="_Undo" Command="{Binding UndoCommand}"/>
+                        <MenuItem Header="_Redo" Command="{Binding RedoCommand}"/>
+                        <MenuItem Header="_Clear canvas" Command="{Binding ClearCommand}"/>
+                        <MenuItem Header="Resize canvas">
+                            <MenuItem Header="_Size up" Command="{Binding BiggerCanvasCommand}" ></MenuItem>
+                            <MenuItem Header="_Size down" Command="{Binding SmallerCanvasCommand}" ></MenuItem>
+                        </MenuItem>
+                    </MenuItem>
+                    <MenuItem Header="_Animations" Height="30" FontFamily="Agency FB" FontSize="18.667">
+                        <MenuItem Header="_Save animations (serialize)" Command="{Binding SaveAnimationsCommand}"/>
+                        <MenuItem Header="_Save spritesheet (.png)" Command="{Binding SaveSpritesheetCommand}"/>
+                        <MenuItem Header="_Load animations (deserialize)" Command="{Binding LoadAnimationsCommand}"/>
+                    </MenuItem>
+                </Menu>
+            </DockPanel>
+        </Grid>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+
+            <ScrollViewer VerticalScrollBarVisibility="Hidden">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="30"/>
+                        <RowDefinition Height="420"/>
+                        <RowDefinition Height="30"/>
+                        <RowDefinition Height="120"/>
+                        <RowDefinition Height="30"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid Grid.Row="0">
+                        <Label Content="Brush" Foreground="#FFF6F6F6" Margin="15,0,0,0" FontSize="20" FontFamily="Agency FB"/>
+                    </Grid>
+                    <Grid Grid.Row="1">
+                        <StackPanel>
+                            <Grid Height="415" Background="#FF252525" Margin="15,0,15,0">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="55"/>
+                                    <RowDefinition Height="25"/>
+                                    <RowDefinition Height="85"/>
+                                    <RowDefinition Height="35"/>
+                                    <RowDefinition Height="100"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                <Grid Grid.Row="0">
+                                    <StackPanel Orientation="Vertical">
+                                        <Label Content="Action" FontFamily="Agency FB" FontSize="16" Foreground="#FFF44D3C"></Label>
+                                        <StackPanel Orientation="Horizontal">
+                                            <Button Margin="5,0,5,0" Height="25" Width="77.5" HorizontalAlignment="Center" Content="Paint" FontFamily="Agency FB" FontSize="16" BorderThickness="1" Background="#FF171717" Foreground="#FFF4F4F4" BorderBrush="#FFF44D3C" Command="{Binding PaintCommand}"></Button>
+                                            <Button Margin="0,0,0,0" Height="25" Width="78" HorizontalAlignment="Left" Content="Erase" FontFamily="Agency FB" FontSize="16" BorderThickness="1" Background="#FF171717" Foreground="#FFF4F4F4" BorderBrush="#FFF44D3C" Command="{Binding EraseCommand}" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Grid>
+                                <Grid Grid.Row="1">
+                                    <Label Content="Color" FontFamily="Agency FB" FontSize="16" Foreground="#FFF44D3C"/>
+                                </Grid>
+                                <Grid Grid.Row="2">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="20"></ColumnDefinition>
+                                        <ColumnDefinition Width="*"></ColumnDefinition>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid Grid.Column="0">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="*"></RowDefinition>
+                                            <RowDefinition Height="*"></RowDefinition>
+                                            <RowDefinition Height="*"></RowDefinition>
+                                        </Grid.RowDefinitions>
+                                        <Grid Grid.Row="0">
+                                            <Label Content="R" Foreground="#FFF44D3C"></Label>
+                                        </Grid>
+                                        <Grid Grid.Row="1">
+                                            <Label Content="G" Foreground="#FFF44D3C"></Label>
+                                        </Grid>
+                                        <Grid Grid.Row="2">
+                                            <Label Content="B" Foreground="#FFF44D3C"></Label>
+                                        </Grid>
+                                    </Grid>
+                                    <Grid Grid.Column="1">
+                                        <StackPanel Orientation="Vertical">
+                                            <StackPanel Orientation="Horizontal">
+                                                <Slider Value="{Binding Red, Mode=TwoWay}" Margin="5,5,5,5" Maximum="255" Width="165"/>
+                                                <Label Content="{Binding Red}" Foreground="#FFF44D3C"></Label>
+                                            </StackPanel>
+                                            <StackPanel Orientation="Horizontal">
+                                                <Slider Value="{Binding Green, Mode=TwoWay}" Margin="5,5,5,5" Maximum="255" Width="165"/>
+                                                <Label Content="{Binding Green}" Foreground="#FFF44D3C"></Label>
+                                            </StackPanel>
+                                            <StackPanel Orientation="Horizontal">
+                                                <Slider Value="{Binding Blue, Mode=TwoWay}" Margin="5,5,5,5" Maximum="255" Width="165"/>
+                                                <Label Content="{Binding Blue}" Foreground="#FFF44D3C"></Label>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Grid>
+                                </Grid>
+
+                                <Grid Grid.Row ="3">
+                                    <Rectangle Stroke="#FFF44D3C" Height="20" Margin="5,0,10,0" >
+                                        <Rectangle.Fill>
+                                            <SolidColorBrush Color="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=DataContext.ColorPickerColor, UpdateSourceTrigger=PropertyChanged}" />
+                                        </Rectangle.Fill>
+                                    </Rectangle>
+                                </Grid>
+
+                                <Grid Grid.Row="4">
+                                    <wpfTool:ColorCanvas SelectedColor="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=DataContext.ColorPickerColor, UpdateSourceTrigger=PropertyChanged}" RenderTransformOrigin="0.5,0.5" Margin="-5,0,1,0" Background="#FF252525" BorderBrush="#FFF44D3C">
+                                        <wpfTool:ColorCanvas.RenderTransform>
+                                            <TransformGroup>
+                                                <ScaleTransform ScaleX="0.92"/>
+                                                <SkewTransform/>
+                                                <RotateTransform/>
+                                                <TranslateTransform/>
+                                            </TransformGroup>
+                                        </wpfTool:ColorCanvas.RenderTransform>
+                                    </wpfTool:ColorCanvas>
+                                </Grid>
+
+                                <Grid Grid.Row="5">
+                                    <StackPanel Orientation="Vertical">
+                                        <Label Content="Palette" FontFamily="Agency FB" FontSize="16" Foreground="#FFF44D3C"></Label>
+                                        <ListView ScrollViewer.VerticalScrollBarVisibility="Visible" SelectedIndex="{Binding SelectedColorIndex}" Height="50" BorderBrush="#FFF44D3C" Margin="5,0,5,0" ItemsSource="{Binding Path=Swatches}" ItemTemplate="{StaticResource LayerTemplate}" Background="{x:Null}">
+                                            <ListView.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <WrapPanel Orientation="Horizontal" MaxWidth="190"/>
+                                                </ItemsPanelTemplate>
+                                            </ListView.ItemsPanel>
+                                        </ListView>
+                                        <StackPanel Orientation="Horizontal">
+                                            <Button Margin="62,5,5,0" Height="25" Width="78" HorizontalAlignment="Right" Content="Add current" FontFamily="Agency FB" FontSize="16" BorderThickness="1" Background="#FF171717" Foreground="#FFF4F4F4" BorderBrush="#FFF44D3C" Command="{Binding SwatchCommand}"/>
+                                            <Button Margin="0,5,5,0" Height="25" Width="78" HorizontalAlignment="Right" Content="Remove" FontFamily="Agency FB" FontSize="16" BorderThickness="1" Background="#FF171717" Foreground="#FFF4F4F4" BorderBrush="#FFF44D3C" Command="{Binding RemoveSwatchCommand}"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Grid>
+                            </Grid>
+                        </StackPanel>
+                    </Grid>
+                    <Grid Grid.Row="2">
+                        <Label Content="Animation" Foreground="#FFF6F6F6" Margin="15,0,0,0" FontSize="20" FontFamily="Agency FB"/>
+                    </Grid>
+
+                    <Grid Grid.Row="3">
+                        <Grid Height="100" Background="#FF252525" Margin="15,0,15,0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"></RowDefinition>
+                            </Grid.RowDefinitions>
+                            <Grid Grid.Row="0">
+                                <Slider Margin="5,5,5,0" TickPlacement="BottomRight" Value="{Binding FrameCounter, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" Maximum="{Binding FrameCount}"></Slider>
+                                <StackPanel Orientation="Horizontal">
+                                    <Button Margin="15,5,5,0" Height="25" Width="25" HorizontalAlignment="Center" Content="&lt;" FontFamily="Agency FB" FontSize="16" BorderThickness="1" Background="#FF171717" Foreground="#FFF4F4F4" BorderBrush="#FFF44D3C" Command="{Binding PrevFrameCommand}"></Button>
+                                    <Label Content="{Binding FrameCounter}" Margin="0,5,5,0" Height="25" Foreground="White" Background="#FFF44D3C"></Label>
+                                    <Button Margin="0,5,30,0" Height="25" Width="25" HorizontalAlignment="Left" Content="&gt;" FontFamily="Agency FB" FontSize="16" BorderThickness="1" Background="#FF171717" Foreground="#FFF4F4F4" BorderBrush="#FFF44D3C" Command="{Binding NextFrameCommand}" VerticalAlignment="Center"/>
+                                    <Button Margin="5,40,5,35" Height="Auto" Width="85" HorizontalAlignment="Left" Content="Add frame" FontFamily="Agency FB" FontSize="16" BorderThickness="1" Background="#FF171717" Foreground="#FFF4F4F4" BorderBrush="#FFF44D3C" Command="{Binding AddNewFrameCommand}"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,28,0,-28">
+                                    <Button Margin="15,5,35,0" Height="25" Width="76" HorizontalAlignment="Left" Content="Play" FontFamily="Agency FB" FontSize="16" BorderThickness="1" Background="#FF171717" Foreground="#FFF4F4F4" BorderBrush="#FFF44D3C" Command="{Binding PlayCommand}" VerticalAlignment="Center"/>
+                                    <Button Margin="0,40,5,35" Height="25" Width="85" HorizontalAlignment="Left" Content="Remove frame" FontFamily="Agency FB" FontSize="16" BorderThickness="1" Background="#FF171717" Foreground="#FFF4F4F4" BorderBrush="#FFF44D3C" Command="{Binding RemoveFrameCommand}" VerticalAlignment="Bottom"/>
+                                </StackPanel>
+                            </Grid>
+                        </Grid>
+                    </Grid>
+
+                    <Grid Grid.Row="4">
+                        <StackPanel Orientation="Horizontal">
+                            <Label Content="Actions" Foreground="#FFF6F6F6" Margin="15,0,0,0" FontSize="20" FontFamily="Agency FB"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <Grid Grid.Row="5">
+                        <Grid Background="#FF252525" Margin="0,10,15,0" HorizontalAlignment="Right" Width="236" Height="100" VerticalAlignment="Top">
+                            <StackPanel Orientation="Horizontal">
+                                <Button Margin="8,10,5,0" Height="25" Width="60" VerticalAlignment="Top" HorizontalAlignment="Center" Content="Undo" FontFamily="Agency FB" FontSize="16" BorderThickness="1" Background="#FF171717" Foreground="#FFF4F4F4" BorderBrush="#FFF44D3C" Command="{Binding UndoCommand}"></Button>
+                                <Button Margin="5,10,0,0" Height="25" Width="60" VerticalAlignment="Top" HorizontalAlignment="Center" Content="Redo" FontFamily="Agency FB" FontSize="16" BorderThickness="1" Background="#FF171717" Foreground="#FFF4F4F4" BorderBrush="#FFF44D3C" Command="{Binding RedoCommand}" />
+                            </StackPanel>
+                            <Label Content="Canvas actions" Margin="5,35,5,0" FontFamily="Agency FB" FontSize="16" Foreground="#FFF4F4F4" ></Label>
+                            <StackPanel Orientation="Horizontal">
+                                <Button Margin="8,0,0,10" Height="25" Width="50" VerticalAlignment="Bottom" HorizontalAlignment="Left" Content="Clear" FontFamily="Agency FB" FontSize="16" BorderThickness="1" Background="#FF171717" Foreground="#FFF4F4F4" BorderBrush="#FFF44D3C" Command="{Binding ClearCommand}"/>
+                                <Label Margin="5,65,0,10" Content="Size:" FontFamily="Agency FB" FontSize="16" Foreground="#FFF4F4F4"></Label>
+                                <Button Margin="5,0,5,10" Height="25" Width="35" VerticalAlignment="Bottom" HorizontalAlignment="Center" Content="+" FontFamily="Agency FB" FontSize="16" BorderThickness="1" Background="#FF171717" Foreground="#FFF4F4F4" BorderBrush="#FFF44D3C" Command="{Binding BiggerCanvasCommand}"></Button>
+                                <Button Margin="0,0,0,10" Height="25" Width="35" VerticalAlignment="Bottom" HorizontalAlignment="Center" Content="-" FontFamily="Agency FB" FontSize="16" BorderThickness="1" Background="#FF171717" Foreground="#FFF4F4F4" BorderBrush="#FFF44D3C" Command="{Binding SmallerCanvasCommand}"></Button>
+
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
+                </Grid>
+            </ScrollViewer>
+
+            <Grid Grid.Column="1">
+                <Grid Margin="5,5,5,5" Background="#FFF4463C">
+                    <Grid Margin="2,2,2,2" Background="#FF171717">
+
+                        <ScrollViewer VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible" Opacity="0.5">
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="PreviewMouseWheel">
+                                    <command:EventToCommand Command="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=DataContext.ZoomCommand}" PassEventArgsToCommand="True" />
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                            <Grid RenderTransformOrigin="0.5,0.5">
+                                <Grid.LayoutTransform>
+                                    <ScaleTransform ScaleX="{Binding ZoomLevel}" ScaleY="{Binding ZoomLevel}"/>
+                                </Grid.LayoutTransform>
+                                <ItemsControl ItemsSource="{Binding RectItems}">
+                                    <ItemsControl.LayoutTransform>
+                                        <ScaleTransform CenterX="0" CenterY="0" ScaleX="{Binding ZoomLevel}" ScaleY="{Binding ZoomLevel}"/>
+                                    </ItemsControl.LayoutTransform>
+
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <Canvas Width="{Binding CanvasPixelWidth}" Height="{Binding CanvasPixelHeight}" HorizontalAlignment="Left" VerticalAlignment="Top" >
+                                            </Canvas>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemContainerStyle>
+                                        <Style TargetType="ContentPresenter">
+                                            <Setter Property="Canvas.Left" Value="{Binding X}"/>
+                                            <Setter Property="Canvas.Top" Value="{Binding Y}"/>
+                                        </Style>
+                                    </ItemsControl.ItemContainerStyle>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Rectangle Width="{Binding Width}" Height="{Binding Height}" Fill="{Binding PixelColor}" Stroke="GreenYellow" StrokeThickness="0.1">
+                                                <i:Interaction.Triggers>
+                                                    <i:EventTrigger EventName="MouseLeftButtonDown">
+                                                        <command:EventToCommand Command="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=DataContext.MouseDownCommand}" CommandParameter="{Binding .}" />
+                                                    </i:EventTrigger>
+                                                    <i:EventTrigger EventName="MouseLeftButtonUp">
+                                                        <command:EventToCommand Command="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=DataContext.MouseUpCommand}" CommandParameter="{Binding .}" />
+                                                    </i:EventTrigger>
+                                                    <i:EventTrigger EventName="MouseMove">
+                                                        <command:EventToCommand Command="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=DataContext.EditCommand}" CommandParameter="{Binding .}" />
+                                                    </i:EventTrigger>
+                                                    <i:EventTrigger EventName="MouseDown">
+                                                        <command:EventToCommand Command="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=DataContext.EditCommand}" CommandParameter="{Binding .}" />
+                                                    </i:EventTrigger>
+                                                </i:Interaction.Triggers>
+                                            </Rectangle>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </Grid>
+                        </ScrollViewer>
+                    </Grid>
+                </Grid>
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>
+
